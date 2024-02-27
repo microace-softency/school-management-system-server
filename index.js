@@ -10,17 +10,19 @@ app.use(bodyParser.json());
 
 // Check the database connection
 
-app.get('/student', async (req, res) => {
-  // try {
-  //   const sqlInsert = "INSERT INTO students (name, email, contact) VALUES('john', 'jhon@gmsil.com', '33533121')";
-  //   const result = await db.query(sqlInsert);
-  //   console.log("result", result);
-  //   // res.send('hello');
-  // } catch (error) {
-  //   console.error("error", error);
-  //   res.status(500).send('Internal Server Error');
-  // }
-});
+// app.get('/class', async (req, res) => {
+//   try {
+//     const sqlInsert = "INSERT INTO class (classcode, classname) VALUES('1001', 'classV')";
+//     const result = await db.query(sqlInsert);
+//     console.log("result", result);
+//     res.send('hello');
+//   } catch (error) {
+//     console.error("error", error);
+//     res.status(500).send('Internal Server Error');
+//   }
+// });
+
+//-----student-------------//
 app.get("/api/student", async(req, res)=>{
   await db.query("SELECT * FROM students ")
   .then(data => res.send(data))
@@ -77,28 +79,60 @@ app.put("/api/put/:id", async(req, res)=>{
   })
 })
 
+//-----class-------------//
+
+//fetch class data
+app.get("/api/class", async(req, res)=>{
+  await db.query("SELECT * FROM class ")
+  .then(data => res.send(data))
+  .catch(err => console.log(err))
+})
+
+//create class data
+app.post("/api/createclass", (req, res)=>{
+  const{classcode,classname}= req.body
+  const sqlInsert = "INSERT INTO class (classcode, classname) VALUES(?, ?)";
+  db.query(sqlInsert,[classcode, classname], (error, result)=>{
+    if(error){
+      console.log(error);
+    }
+  })
+})
+
+//class remove
+app.delete("/api/removeclass/:id", (req, res)=>{
+  const{id}= req.params
+  const sqlRemove = "DELETE FROM class WHERE classcode = ?";
+  db.query(sqlRemove,id, (error, result)=>{
+    if(error){
+      console.log(error);
+    }
+  })
+})
+
+//Class details view
+app.get("/api/class/:id", async (req, res) => {
+  const { id } = req.params;
+  const sqlGet = "SELECT * FROM students WHERE classcode = ?";
+  
+  try {
+    const result = await db.query(sqlGet, id);
+
+    if (result.length === 0) {
+      res.status(404).json({ error: 'class not found' });
+    } else {
+      res.json(result[0]);
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
 
 db.query("SELECT 1")
   .then((data) => {
     console.log('DB connection succeeded', data);
 
-    // app.post('/api/post', async (req, res) => {
-    //   console.log('ayayaayayaya');
-    //   try {
-    //     const { bookCode, bookName, quantity, bookGroup, writerName, publisherName } = req.body;
-    //     const sql = `INSERT INTO books (bookCode, bookName, quantity, bookGroup, writerName, publisherName) VALUES (?, ?, ?, ?, ?, ?)`;
-    //     await db.query(sql, [bookCode, bookName, quantity, bookGroup, writerName, publisherName]);
-    //     console.log('Data saved successfully');
-    //     res.json({ success: true });
-    //    res.send('hello book' );
-
-    //   } catch (error) {
-    //     console.error(error);
-    //     res.status(500).json({ error: 'Failed to save data to the database' });
-    //   }
-    // });
-
-    // Start the server
     const PORT = process.env.PORT || 3002;
     app.listen(PORT, () => {
       console.log(`Server started at http://localhost:${PORT}`);
