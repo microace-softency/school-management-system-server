@@ -67,7 +67,7 @@ app.get("/api/student/:id", async (req, res) => {
   }
 });
 
-app.put("/api/put/:id", async(req, res)=>{
+app.put("/api/update/:id", async(req, res)=>{
   const{id}= req.params;
   const{name,email,contact}= req.body
   const sqlUpdate = "UPDATE students SET name = ?, email = ?, contact = ? WHERE id = ?";
@@ -102,7 +102,7 @@ app.post("/api/createclass", (req, res)=>{
 //class remove
 app.delete("/api/removeclass/:id", (req, res)=>{
   const{id}= req.params
-  const sqlRemove = "DELETE FROM class WHERE classcode = ?";
+  const sqlRemove = "DELETE FROM class WHERE id = ?";
   db.query(sqlRemove,id, (error, result)=>{
     if(error){
       console.log(error);
@@ -113,7 +113,7 @@ app.delete("/api/removeclass/:id", (req, res)=>{
 //Class details view
 app.get("/api/class/:id", async (req, res) => {
   const { id } = req.params;
-  const sqlGet = "SELECT * FROM students WHERE classcode = ?";
+  const sqlGet = "SELECT * FROM class WHERE id = ?";
   
   try {
     const result = await db.query(sqlGet, id);
@@ -128,6 +128,99 @@ app.get("/api/class/:id", async (req, res) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
+
+//Class details update
+app.put("/api/classupdate/:id", async(req, res)=>{
+  const{id}= req.params;
+  const{classcode, classname}= req.body
+  const sqlUpdate = "UPDATE class SET classcode = ?, classname = ? WHERE id = ?";
+  await db.query(sqlUpdate, [classcode, classname, id], (error, result ) =>{
+    if (error) {
+      console.log(error);
+    }
+    res.send(result)
+  })
+});
+
+
+//-----Bookmaster-------------//
+app.get("/api/book", async(req, res)=>{
+  await db.query("SELECT * FROM books ")
+  .then(data => res.send(data))
+  .catch(err => console.log(err))
+})
+//create book data
+app.post("/api/createbook", (req, res)=>{
+  const{bookCode, bookGroup, bookName,  publisherName, quantity, writerName}= req.body
+  const sqlInsert = "INSERT INTO books (bookCode, bookGroup, bookName,  publisherName, quantity, writerName) VALUES( ?, ?, ?, ?, ?, ?)";
+  db.query(sqlInsert,[bookCode, bookGroup, bookName,  publisherName, quantity, writerName], (error, result)=>{
+    if(error){
+      console.log(error);
+    }
+  })
+})
+//book remove
+app.delete("/api/removebook/:id", (req, res)=>{
+  const{id}= req.params
+  const sqlRemove = "DELETE FROM books WHERE id = ?";
+  db.query(sqlRemove,id, (error, result)=>{
+    if(error){
+      console.log(error);
+    }
+  })
+});
+//book details view
+app.get("/api/book/:id", async (req, res) => {
+  const { id } = req.params;
+  const sqlGet = "SELECT * FROM books WHERE id = ?";
+  
+  try {
+    const result = await db.query(sqlGet, id);
+
+    if (result.length === 0) {
+      res.status(404).json({ error: 'class not found' });
+    } else {
+      res.json(result[0]);
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+//Book details update
+app.put("/api/updatebook/:id", async(req, res)=>{
+  const{id}= req.params;
+  const{bookCode, bookGroup, bookName,  publisherName, quantity, writerName}= req.body
+  const sqlUpdate = "UPDATE books SET bookCode = ?, bookGroup = ?, bookName = ?,  publisherName = ?, quantity = ?, writerName = ? WHERE id = ?";
+  await db.query(sqlUpdate, [bookCode, bookGroup, bookName,  publisherName, quantity, writerName, id], (error, result ) =>{
+    if (error) {
+      console.log(error);
+    }
+    res.send(result)
+  })
+});
+
+//-----section-------------//
+// app.get('/section', async (req, res) => {
+//     try {
+//       const sqlInsert = "INSERT INTO section (sectionname, classname) VALUES('sectionE', 'classVI')";
+//       const result = await db.query(sqlInsert);
+//       console.log("result", result);
+//       res.send('hello');
+//     } catch (error) {
+//       console.error("error", error);
+//       res.status(500).send('Internal Server Error');
+//     }
+//   });
+
+//fatched section 
+app.get("/api/section", async(req, res)=>{
+  await db.query("SELECT * FROM section ")
+  .then(data => res.send(data))
+  .catch(err => console.log(err))
+});
+
 
 db.query("SELECT 1")
   .then((data) => {
